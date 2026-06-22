@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Event</title>
+</head>
+<body>
+
+<h2>Add New Event</h2>
+
+<form th:action="@{/saveEvent}" th:object="${event}" method="post">
+
+    <label>Title:</label>
+    <input type="text" th:field="*{title}">
+    <br><br>
+
+    <label>Event Date:</label>
+    <input type="date" th:field="*{eventDate}">
+    <br><br>
+
+    <label>Attendance:</label>
+    <input type="number" th:field="*{attendance}">
+    <br><br>
+
+    <label>WiFi Estimate:</label>
+    <input type="number" th:field="*{wifiEstimate}">
+    <br><br>
+
+    <label>Network Usage (GB):</label>
+    <input type="number" step="0.01" th:field="*{networkUsage}">
+    <br><br>
+
+    <label>Notes:</label>
+    <textarea th:field="*{notes}"></textarea>
+    <br><br>
+
+    <button type="submit">Save Event</button>
+
+</form>
+
+</body>
+</html>

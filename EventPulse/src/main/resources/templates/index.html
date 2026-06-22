@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>EventPulse</title>
+</head>
+<body>
+
+<h1>EventPulse</h1>
+
+<a href="/showNewEventForm">Add New Event</a>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Event Date</th>
+        <th>Attendance</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="event : ${events}">
+        <td th:text="${event.id}"></td>
+        <td th:text="${event.title}"></td>
+        <td th:text="${event.eventDate}"></td>
+        <td th:text="${event.attendance}"></td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
