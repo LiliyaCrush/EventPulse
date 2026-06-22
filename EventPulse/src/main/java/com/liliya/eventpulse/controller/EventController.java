@@ -33,4 +33,10 @@ public class EventController {
         eventService.saveEvent(event);
         return "redirect:/";
     }
+
+    @GetMapping("/deleteEvent/{id}")
+    public String deleteEvent(@PathVariable Long id) {
+        eventService.deleteEvent(id);
+        return "redirect:/";
+    }
 }
