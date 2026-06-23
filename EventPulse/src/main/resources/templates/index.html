@@ -27,6 +27,10 @@
         <td th:text="${event.eventDate}"></td>
         <td th:text="${event.attendance}"></td>
         <td>
+            <a th:href="@{/showFormForUpdate/{id}(id=${event.id})}">
+                Edit
+            </a>
+            |
             <a th:href="@{/deleteEvent/{id}(id=${event.id})}">
                 Delete
             </a>

@@ -34,4 +34,6 @@ public class EventService {
     public List<Event> searchEvents(String title) {
         return eventRepository.findByTitleContainingIgnoreCase(title);
     }
+
+
 }

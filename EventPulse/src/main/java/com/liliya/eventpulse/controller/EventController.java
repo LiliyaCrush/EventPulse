@@ -39,4 +39,13 @@ public class EventController {
         eventService.deleteEvent(id);
         return "redirect:/";
     }
+    @GetMapping("/showFormForUpdate/{id}")
+    public String showFormForUpdate(@PathVariable Long id, Model model) {
+
+        Event event = eventService.getEventById(id);
+
+        model.addAttribute("event", event);
+
+        return "new_event";
+    }
 }

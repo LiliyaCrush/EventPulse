@@ -8,6 +8,7 @@
 <h2>Add New Event</h2>
 
 <form th:action="@{/saveEvent}" th:object="${event}" method="post">
+    <input type="hidden" th:field="*{id}" />
 
     <label>Title:</label>
     <input type="text" th:field="*{title}">
