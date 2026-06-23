@@ -5,6 +5,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 public class Event {
@@ -14,6 +15,7 @@ public class Event {
     private Long id;
 
     private String title;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate eventDate;
     private Integer attendance;
     private Integer wifiEstimate;
