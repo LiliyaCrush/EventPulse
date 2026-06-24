@@ -31,8 +31,8 @@ public class EventService {
         return eventRepository.findById(id).orElse(null);
     }
 
-    public List<Event> searchEvents(String title) {
-        return eventRepository.findByTitleContainingIgnoreCase(title);
+    public List<Event> searchEvents(String keyword) {
+        return eventRepository.searchByKeyword(keyword);
     }
 
 

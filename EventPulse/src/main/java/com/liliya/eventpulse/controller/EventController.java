@@ -21,6 +21,13 @@ public class EventController {
         return "index";
     }
 
+    @GetMapping("/searchEvents")
+    public String searchEvents(@RequestParam("keyword") String keyword, Model model) {
+        model.addAttribute("events", eventService.searchEvents(keyword));
+        model.addAttribute("keyword", keyword);
+        return "index";
+    }
+
     @GetMapping("/showNewEventForm")
     public String showNewEventForm(Model model) {
         Event event = new Event();
