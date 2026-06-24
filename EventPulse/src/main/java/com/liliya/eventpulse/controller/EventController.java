@@ -6,6 +6,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+
 @Controller
 public class EventController {
 
@@ -26,6 +28,13 @@ public class EventController {
         model.addAttribute("events", eventService.searchEvents(keyword));
         model.addAttribute("keyword", keyword);
         return "index";
+    }
+
+    @GetMapping("/reports/attendance")
+    public String attendanceReport(Model model) {
+        model.addAttribute("events", eventService.getAllEvents());
+        model.addAttribute("reportGeneratedAt", LocalDateTime.now());
+        return "attendance_report";
     }
 
     @GetMapping("/showNewEventForm")
