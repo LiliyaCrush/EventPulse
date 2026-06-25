@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -14,11 +16,15 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Event title is required.")
     private String title;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate eventDate;
+    @Min(value = 0, message = "Attendance must be 0 or greater.")
     private Integer attendance;
+    @Min(value = 0, message = "WiFi Estimate must be 0 or greater.")
     private Integer wifiEstimate;
+    @Min(value = 0, message = "Network Usage must be 0 or greater.")
     private Double networkUsage;
     private String notes;
 

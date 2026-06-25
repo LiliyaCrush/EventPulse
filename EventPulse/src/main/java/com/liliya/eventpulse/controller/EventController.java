@@ -2,8 +2,10 @@ package com.liliya.eventpulse.controller;
 
 import com.liliya.eventpulse.entity.Event;
 import com.liliya.eventpulse.service.EventService;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -45,7 +47,10 @@ public class EventController {
     }
 
     @PostMapping("/saveEvent")
-    public String saveEvent(@ModelAttribute("event") Event event) {
+    public String saveEvent(@Valid @ModelAttribute("event") Event event, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "new_event";
+        }
         eventService.saveEvent(event);
         return "redirect:/";
     }

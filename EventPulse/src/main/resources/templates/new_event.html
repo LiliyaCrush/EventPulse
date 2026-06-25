@@ -27,7 +27,8 @@
 
                         <div class="mb-3">
                             <label for="title" class="form-label">Title</label>
-                            <input type="text" class="form-control" id="title" th:field="*{title}">
+                            <input type="text" class="form-control" id="title" th:field="*{title}" th:errorclass="is-invalid">
+                            <div class="invalid-feedback" th:errors="*{title}"></div>
                         </div>
 
                         <div class="mb-3">
@@ -38,17 +39,20 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="attendance" class="form-label">Attendance</label>
-                                <input type="number" class="form-control" id="attendance" th:field="*{attendance}">
+                                <input type="number" min="0" class="form-control" id="attendance" th:field="*{attendance}" th:errorclass="is-invalid">
+                                <div class="invalid-feedback" th:errors="*{attendance}"></div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="wifiEstimate" class="form-label">WiFi Estimate</label>
-                                <input type="number" class="form-control" id="wifiEstimate" th:field="*{wifiEstimate}">
+                                <input type="number" min="0" class="form-control" id="wifiEstimate" th:field="*{wifiEstimate}" th:errorclass="is-invalid">
+                                <div class="invalid-feedback" th:errors="*{wifiEstimate}"></div>
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label for="networkUsage" class="form-label">Network Usage (GB)</label>
-                            <input type="number" step="0.01" class="form-control" id="networkUsage" th:field="*{networkUsage}">
+                            <input type="number" min="0" step="0.01" class="form-control" id="networkUsage" th:field="*{networkUsage}" th:errorclass="is-invalid">
+                            <div class="invalid-feedback" th:errors="*{networkUsage}"></div>
                         </div>
 
                         <div class="mb-4">
