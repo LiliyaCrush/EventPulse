@@ -35,5 +35,4 @@ public class EventService {
         return eventRepository.searchByKeyword(keyword);
     }
 
-
 }
