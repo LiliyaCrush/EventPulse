@@ -11,9 +11,12 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
     <div class="container">
         <a class="navbar-brand fw-semibold" th:href="@{/}">EventPulse</a>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 align-items-center">
             <a class="btn btn-outline-light btn-sm" th:href="@{/showNewEventForm}">Add New Event</a>
             <a class="btn btn-light btn-sm text-primary" th:href="@{/reports/attendance}">Reports</a>
+            <form th:action="@{/logout}" method="post" class="mb-0">
+                <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+            </form>
         </div>
     </div>
 </nav>
