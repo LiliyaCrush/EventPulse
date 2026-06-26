@@ -17,7 +17,7 @@ EventPulse is a web-based event management application developed as part of the 
 * Spring Boot
 * Spring Security
 * Thymeleaf
-* MySQL
+* H2 Database (persistent file-based)
 * Bootstrap
 * Maven
 
