@@ -4,8 +4,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -18,17 +20,34 @@ public class Event {
 
     @NotBlank(message = "Event title is required.")
     private String title;
+
+    @NotNull(message = "Start date is required.")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    private LocalDate eventDate;
+    private LocalDate startDate;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate endDate;
+
     @Min(value = 0, message = "Attendance must be 0 or greater.")
     private Integer attendance;
+
     @Min(value = 0, message = "WiFi Estimate must be 0 or greater.")
     private Integer wifiEstimate;
+
     @Min(value = 0, message = "Network Usage must be 0 or greater.")
     private Double networkUsage;
+
     private String notes;
 
     public Event() {
+    }
+
+    @AssertTrue(message = "End date cannot be earlier than the start date.")
+    public boolean isEndDateValid() {
+        if (endDate == null || startDate == null) {
+            return true;
+        }
+        return !endDate.isBefore(startDate);
     }
 
     public Long getId() {
@@ -47,12 +66,20 @@ public class Event {
         this.title = title;
     }
 
-    public LocalDate getEventDate() {
-        return eventDate;
+    public LocalDate getStartDate() {
+        return startDate;
     }
 
-    public void setEventDate(LocalDate eventDate) {
-        this.eventDate = eventDate;
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
     }
 
     public Integer getAttendance() {

@@ -74,7 +74,8 @@
                 <tr>
                     <th scope="col" class="ep-col-id">ID</th>
                     <th scope="col" class="ep-col-title">Title</th>
-                    <th scope="col">Event Date</th>
+                    <th scope="col">Start Date</th>
+                    <th scope="col">End Date</th>
                     <th scope="col" class="text-end">Attendance</th>
                     <th scope="col" class="text-end">Wi-Fi Estimate</th>
                     <th scope="col" class="text-end">Network Usage</th>
@@ -84,7 +85,16 @@
                 <tr th:each="event : ${events}">
                     <td class="ep-col-id" th:text="${event.id}"></td>
                     <td class="ep-col-title" th:text="${event.title}"></td>
-                    <td th:text="${event.eventDate}"></td>
+                    <td>
+                        <span class="ep-badge ep-badge--date" th:if="${event.startDate != null}"
+                              th:text="${event.startDate}">Date</span>
+                        <span class="ep-badge ep-badge--muted" th:if="${event.startDate == null}">—</span>
+                    </td>
+                    <td>
+                        <span class="ep-badge ep-badge--date" th:if="${event.endDate != null}"
+                              th:text="${event.endDate}">Date</span>
+                        <span class="ep-badge ep-badge--muted" th:if="${event.endDate == null}">—</span>
+                    </td>
                     <td class="text-end ep-num" th:text="${event.attendance}"></td>
                     <td class="text-end ep-num" th:text="${event.wifiEstimate}"></td>
                     <td class="text-end ep-num" th:text="${event.networkUsage}"></td>
@@ -96,7 +106,7 @@
 </main>
 
 <footer class="ep-footer text-center">
-    <small><strong>EventPulse</strong> · Network event operations</small>
+    <small>Built with Spring Boot · PostgreSQL · Flyway · Thymeleaf</small>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

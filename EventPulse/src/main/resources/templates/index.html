@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>EventPulse · Events</title>
+    <title>EventPulse · Dashboard</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/css/favicon.svg}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link th:href="@{/css/app.css}" rel="stylesheet">
 </head>
-<body class="app-body">
+<body class="app-body" th:with="username='Admin'">
 
 <nav class="navbar navbar-expand-lg ep-navbar">
     <div class="container">
@@ -29,62 +31,143 @@
                 </li>
             </ul>
             <div class="d-flex flex-wrap align-items-center gap-2 ep-nav-actions">
-                <a class="btn btn-sm ep-nav-cta" th:href="@{/showNewEventForm}">Add New Event</a>
-                <form th:action="@{/logout}" method="post" class="mb-0">
-                    <button type="submit" class="btn btn-sm btn-outline-light">Logout</button>
-                </form>
+                <a class="btn btn-sm ep-nav-cta" th:href="@{/showNewEventForm}">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i> Add Event
+                </a>
             </div>
         </div>
     </div>
 </nav>
 
 <main class="container ep-page ep-dashboard">
-    <div class="ep-dashboard-header">
-        <div class="ep-dashboard-header-copy">
-            <h1>Events</h1>
-            <p>View, search, and manage network event records.</p>
+    <header class="ep-welcome">
+        <div class="ep-welcome-copy">
+            <p class="ep-welcome-date" id="epCurrentDate">Loading date…</p>
+            <h1>
+                Welcome back,
+                <span th:text="${username}">User</span>
+            </h1>
+            <p class="ep-welcome-subtitle">Here’s what’s happening across your event operations today.</p>
         </div>
-    </div>
+        <div class="ep-welcome-user">
+            <div class="ep-avatar" aria-hidden="true"
+                 th:text="${#strings.substring(#strings.toUpperCase(username), 0, 1)}">A</div>
+            <div class="ep-welcome-user-meta">
+                <span class="ep-welcome-user-name" th:text="${username}">User</span>
+                <form th:action="@{/logout}" method="post" class="mb-0">
+                    <button type="submit" class="ep-logout-btn">
+                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </header>
 
-    <section class="ep-panel ep-search-panel" aria-label="Search events">
+    <section class="ep-stats" aria-label="Dashboard statistics">
+        <article class="ep-stat-card">
+            <div class="ep-stat-icon" aria-hidden="true"><i class="bi bi-calendar3"></i></div>
+            <div class="ep-stat-body">
+                <span class="ep-stat-label">Total Events</span>
+                <strong class="ep-stat-value" th:text="${#lists.size(events)}">0</strong>
+            </div>
+        </article>
+        <article class="ep-stat-card ep-stat-card--muted">
+            <div class="ep-stat-icon" aria-hidden="true"><i class="bi bi-calendar-event"></i></div>
+            <div class="ep-stat-body">
+                <span class="ep-stat-label">Upcoming Events</span>
+                <!-- TODO: upcoming count requires backend metric -->
+                <strong class="ep-stat-value ep-stat-value--soon">Coming Soon</strong>
+            </div>
+        </article>
+        <article class="ep-stat-card ep-stat-card--muted">
+            <div class="ep-stat-icon" aria-hidden="true"><i class="bi bi-sun"></i></div>
+            <div class="ep-stat-body">
+                <span class="ep-stat-label">Today’s Events</span>
+                <!-- TODO: today's count requires backend metric -->
+                <strong class="ep-stat-value ep-stat-value--soon">Coming Soon</strong>
+            </div>
+        </article>
+        <article class="ep-stat-card ep-stat-card--muted">
+            <div class="ep-stat-icon" aria-hidden="true"><i class="bi bi-people"></i></div>
+            <div class="ep-stat-body">
+                <span class="ep-stat-label">Average Attendance</span>
+                <!-- TODO: average attendance requires backend metric -->
+                <strong class="ep-stat-value ep-stat-value--soon">Coming Soon</strong>
+            </div>
+        </article>
+    </section>
+
+    <section class="ep-quick-actions" aria-label="Quick actions">
+        <h2 class="ep-section-label">Quick Actions</h2>
+        <div class="ep-action-grid">
+            <a class="ep-action-tile" th:href="@{/showNewEventForm}">
+                <span class="ep-action-icon" aria-hidden="true"><i class="bi bi-plus-lg"></i></span>
+                <span class="ep-action-title">Add Event</span>
+                <span class="ep-action-desc">Create a new event record</span>
+            </a>
+            <a class="ep-action-tile" href="#events">
+                <span class="ep-action-icon" aria-hidden="true"><i class="bi bi-calendar2-week"></i></span>
+                <span class="ep-action-title">View Events</span>
+                <span class="ep-action-desc">Jump to your event list</span>
+            </a>
+            <a class="ep-action-tile" th:href="@{/reports/attendance}">
+                <span class="ep-action-icon" aria-hidden="true"><i class="bi bi-bar-chart-line"></i></span>
+                <span class="ep-action-title">Attendance Report</span>
+                <span class="ep-action-desc">Review attendance insights</span>
+            </a>
+            <button type="button" class="ep-action-tile" id="epFocusSearch">
+                <span class="ep-action-icon" aria-hidden="true"><i class="bi bi-search"></i></span>
+                <span class="ep-action-title">Search Events</span>
+                <span class="ep-action-desc">Find events by title or notes</span>
+            </button>
+        </div>
+    </section>
+
+    <section class="ep-panel ep-search-panel" id="search" aria-label="Search events">
+        <div class="ep-panel-toolbar">
+            <h2><i class="bi bi-search" aria-hidden="true"></i> Search Events</h2>
+        </div>
         <form th:action="@{/searchEvents}" method="get" class="ep-search-form">
             <label for="keyword" class="form-label">Search by title or notes</label>
             <div class="ep-search-row">
                 <div class="ep-search-field">
                     <div class="input-group ep-search-group">
                         <span class="input-group-text ep-search-addon" aria-hidden="true">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="7"></circle>
-                                <path d="M20 20l-3.5-3.5" stroke-linecap="round"></path>
-                            </svg>
+                            <i class="bi bi-search"></i>
                         </span>
                         <input type="text" class="form-control ep-search-input" id="keyword" name="keyword"
                                th:value="${keyword}" placeholder="Search by title or notes">
                     </div>
                 </div>
                 <div class="ep-search-actions">
-                    <button type="submit" class="btn ep-btn-primary">Search</button>
-                    <a class="btn btn-outline-secondary ep-btn-clear" th:href="@{/}">Clear</a>
+                    <button type="submit" class="btn ep-btn-primary">
+                        <i class="bi bi-search" aria-hidden="true"></i> Search
+                    </button>
+                    <a class="btn ep-btn-ghost" th:href="@{/}">Clear</a>
                 </div>
             </div>
         </form>
     </section>
 
-    <section class="ep-panel ep-table-panel" aria-label="Events list">
+    <section class="ep-panel ep-table-panel" id="events" aria-label="Events list">
         <div class="ep-panel-toolbar">
-            <h2>All Events</h2>
+            <div>
+                <h2>Recent Activity</h2>
+                <p class="ep-panel-subtitle">Your latest event records</p>
+            </div>
+            <a class="ep-toolbar-link" th:href="@{/showNewEventForm}">
+                <i class="bi bi-plus-lg" aria-hidden="true"></i> New event
+            </a>
         </div>
 
         <div th:if="${#lists.isEmpty(events)}" class="ep-empty-state">
             <div class="ep-empty-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
-                    <path d="M3 10h18" stroke-linecap="round"></path>
-                </svg>
+                <i class="bi bi-calendar-plus"></i>
             </div>
-            <h3>No events found</h3>
-            <p>Create your first event to begin managing network operations.</p>
-            <a class="btn ep-btn-primary" th:href="@{/showNewEventForm}">Add Event</a>
+            <h3>No events yet</h3>
+            <p>Start building your schedule by creating your first event.</p>
+            <a class="btn ep-btn-primary" th:href="@{/showNewEventForm}">Create First Event</a>
         </div>
 
         <div th:unless="${#lists.isEmpty(events)}" class="table-responsive">
@@ -93,25 +176,44 @@
                 <tr>
                     <th scope="col" class="ep-col-id">ID</th>
                     <th scope="col" class="ep-col-title">Title</th>
-                    <th scope="col">Event Date</th>
+                    <th scope="col">Start</th>
+                    <th scope="col">End</th>
                     <th scope="col">Attendance</th>
-                    <th scope="col" class="text-end">Action</th>
+                    <th scope="col" class="text-end">Actions</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="event : ${events}">
                     <td class="ep-col-id" th:text="${event.id}"></td>
-                    <td class="ep-col-title" th:text="${event.title}"></td>
-                    <td th:text="${event.eventDate}"></td>
-                    <td th:text="${event.attendance}"></td>
+                    <td class="ep-col-title">
+                        <span class="ep-event-title" th:text="${event.title}">Title</span>
+                    </td>
+                    <td>
+                        <span class="ep-badge ep-badge--date" th:if="${event.startDate != null}"
+                              th:text="${event.startDate}">Date</span>
+                        <span class="ep-badge ep-badge--muted" th:if="${event.startDate == null}">—</span>
+                    </td>
+                    <td>
+                        <span class="ep-badge ep-badge--date" th:if="${event.endDate != null}"
+                              th:text="${event.endDate}">Date</span>
+                        <span class="ep-badge ep-badge--muted" th:if="${event.endDate == null}">—</span>
+                    </td>
+                    <td>
+                        <span class="ep-badge ep-badge--soft"
+                              th:text="${event.attendance != null ? event.attendance : '—'}">0</span>
+                    </td>
                     <td class="text-end text-nowrap ep-actions">
-                        <a class="btn btn-sm btn-outline-primary"
-                           th:href="@{/showFormForUpdate/{id}(id=${event.id})}">
-                            Edit
+                        <a class="ep-icon-btn ep-icon-btn--edit"
+                           th:href="@{/showFormForUpdate/{id}(id=${event.id})}"
+                           title="Edit">
+                            <i class="bi bi-pencil" aria-hidden="true"></i>
+                            <span class="visually-hidden">Edit</span>
                         </a>
-                        <a class="btn btn-sm btn-outline-danger"
-                           th:href="@{/deleteEvent/{id}(id=${event.id})}">
-                            Delete
+                        <a class="ep-icon-btn ep-icon-btn--danger"
+                           th:href="@{/deleteEvent/{id}(id=${event.id})}"
+                           title="Delete">
+                            <i class="bi bi-trash" aria-hidden="true"></i>
+                            <span class="visually-hidden">Delete</span>
                         </a>
                     </td>
                 </tr>
@@ -122,9 +224,27 @@
 </main>
 
 <footer class="ep-footer text-center">
-    <small><strong>EventPulse</strong> · Network event operations</small>
+    <small>Built with Spring Boot · PostgreSQL · Flyway · Thymeleaf</small>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    (function () {
+        var dateEl = document.getElementById('epCurrentDate');
+        if (dateEl) {
+            dateEl.textContent = new Date().toLocaleDateString('en-US', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+        }
+        var searchBtn = document.getElementById('epFocusSearch');
+        var keyword = document.getElementById('keyword');
+        if (searchBtn && keyword) {
+            searchBtn.addEventListener('click', function () {
+                document.getElementById('search').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                keyword.focus();
+            });
+        }
+    })();
+</script>
 </body>
 </html>
