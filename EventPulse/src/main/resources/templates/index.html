@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,7 +11,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link th:href="@{/css/app.css}" rel="stylesheet">
 </head>
-<body class="app-body" th:with="username='Admin'">
+<body class="app-body">
 
 <nav class="navbar navbar-expand-lg ep-navbar">
     <div class="container">
@@ -31,9 +33,34 @@
                 </li>
             </ul>
             <div class="d-flex flex-wrap align-items-center gap-2 ep-nav-actions">
-                <a class="btn btn-sm ep-nav-cta" th:href="@{/showNewEventForm}">
+                <a class="btn btn-sm ep-nav-cta" th:href="@{/showNewEventForm}"
+                   sec:authorize="hasRole('ADMIN')">
                     <i class="bi bi-plus-lg" aria-hidden="true"></i> Add Event
                 </a>
+                <div class="dropdown ep-user-menu" sec:authorize="isAuthenticated()">
+                    <button class="btn ep-user-menu-toggle dropdown-toggle" type="button"
+                            id="epUserMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="ep-nav-avatar" aria-hidden="true"
+                              th:text="${#strings.substring(#strings.toUpperCase(#authentication.name), 0, 1)}">A</span>
+                        <span class="ep-user-menu-label" sec:authentication="name">user</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end ep-user-dropdown" aria-labelledby="epUserMenu">
+                        <li class="px-3 py-2">
+                            <div class="ep-user-dropdown-name" sec:authentication="name">user</div>
+                            <div class="ep-user-dropdown-role" sec:authorize="hasRole('ADMIN')">Administrator</div>
+                            <div class="ep-user-dropdown-role" sec:authorize="hasRole('VIEWER')">Viewer</div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post" class="px-3 pb-2 mb-0">
+                                <button type="submit" class="btn btn-sm ep-btn-ghost w-100 text-start">
+                                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                                    Sign out
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -45,21 +72,17 @@
             <p class="ep-welcome-date" id="epCurrentDate">Loading date…</p>
             <h1>
                 Welcome back,
-                <span th:text="${username}">User</span>
+                <span sec:authentication="name">User</span>
             </h1>
             <p class="ep-welcome-subtitle">Here’s what’s happening across your event operations today.</p>
         </div>
-        <div class="ep-welcome-user">
+        <div class="ep-welcome-user" sec:authorize="isAuthenticated()">
             <div class="ep-avatar" aria-hidden="true"
-                 th:text="${#strings.substring(#strings.toUpperCase(username), 0, 1)}">A</div>
+                 th:text="${#strings.substring(#strings.toUpperCase(#authentication.name), 0, 1)}">A</div>
             <div class="ep-welcome-user-meta">
-                <span class="ep-welcome-user-name" th:text="${username}">User</span>
-                <form th:action="@{/logout}" method="post" class="mb-0">
-                    <button type="submit" class="ep-logout-btn">
-                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
-                        Logout
-                    </button>
-                </form>
+                <span class="ep-welcome-user-name" sec:authentication="name">User</span>
+                <span class="ep-welcome-user-role" sec:authorize="hasRole('ADMIN')">Administrator</span>
+                <span class="ep-welcome-user-role" sec:authorize="hasRole('VIEWER')">Viewer</span>
             </div>
         </div>
     </header>
@@ -101,7 +124,7 @@
     <section class="ep-quick-actions" aria-label="Quick actions">
         <h2 class="ep-section-label">Quick Actions</h2>
         <div class="ep-action-grid">
-            <a class="ep-action-tile" th:href="@{/showNewEventForm}">
+            <a class="ep-action-tile" th:href="@{/showNewEventForm}" sec:authorize="hasRole('ADMIN')">
                 <span class="ep-action-icon" aria-hidden="true"><i class="bi bi-plus-lg"></i></span>
                 <span class="ep-action-title">Add Event</span>
                 <span class="ep-action-desc">Create a new event record</span>
@@ -156,7 +179,7 @@
                 <h2>Recent Activity</h2>
                 <p class="ep-panel-subtitle">Your latest event records</p>
             </div>
-            <a class="ep-toolbar-link" th:href="@{/showNewEventForm}">
+            <a class="ep-toolbar-link" th:href="@{/showNewEventForm}" sec:authorize="hasRole('ADMIN')">
                 <i class="bi bi-plus-lg" aria-hidden="true"></i> New event
             </a>
         </div>
@@ -166,8 +189,9 @@
                 <i class="bi bi-calendar-plus"></i>
             </div>
             <h3>No events yet</h3>
-            <p>Start building your schedule by creating your first event.</p>
-            <a class="btn ep-btn-primary" th:href="@{/showNewEventForm}">Create First Event</a>
+            <p sec:authorize="hasRole('ADMIN')">Start building your schedule by creating your first event.</p>
+            <p sec:authorize="hasRole('VIEWER')">No events have been recorded yet. An administrator can add the first event.</p>
+            <a class="btn ep-btn-primary" th:href="@{/showNewEventForm}" sec:authorize="hasRole('ADMIN')">Create First Event</a>
         </div>
 
         <div th:unless="${#lists.isEmpty(events)}" class="table-responsive">
@@ -179,7 +203,7 @@
                     <th scope="col">Start</th>
                     <th scope="col">End</th>
                     <th scope="col">Attendance</th>
-                    <th scope="col" class="text-end">Actions</th>
+                    <th scope="col" class="text-end" sec:authorize="hasRole('ADMIN')">Actions</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -202,7 +226,7 @@
                         <span class="ep-badge ep-badge--soft"
                               th:text="${event.attendance != null ? event.attendance : '—'}">0</span>
                     </td>
-                    <td class="text-end text-nowrap ep-actions">
+                    <td class="text-end text-nowrap ep-actions" sec:authorize="hasRole('ADMIN')">
                         <a class="ep-icon-btn ep-icon-btn--edit"
                            th:href="@{/showFormForUpdate/{id}(id=${event.id})}"
                            title="Edit">
@@ -224,7 +248,7 @@
 </main>
 
 <footer class="ep-footer text-center">
-    <small>Built with Spring Boot · PostgreSQL · Flyway · Thymeleaf</small>
+    <small>Built with Spring Boot · Spring Security · PostgreSQL · Flyway · Thymeleaf</small>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

@@ -1,10 +1,14 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>EventPulse · Event Form</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/css/favicon.svg}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link th:href="@{/css/app.css}" rel="stylesheet">
 </head>
 <body class="app-body">
@@ -29,10 +33,34 @@
                 </li>
             </ul>
             <div class="d-flex flex-wrap align-items-center gap-2 ep-nav-actions">
-                <a class="btn btn-sm ep-nav-cta" th:href="@{/showNewEventForm}">Add New Event</a>
-                <form th:action="@{/logout}" method="post" class="mb-0">
-                    <button type="submit" class="btn btn-sm btn-outline-light">Logout</button>
-                </form>
+                <a class="btn btn-sm ep-nav-cta" th:href="@{/showNewEventForm}"
+                   sec:authorize="hasRole('ADMIN')">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i> Add Event
+                </a>
+                <div class="dropdown ep-user-menu" sec:authorize="isAuthenticated()">
+                    <button class="btn ep-user-menu-toggle dropdown-toggle" type="button"
+                            id="epUserMenuForm" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="ep-nav-avatar" aria-hidden="true"
+                              th:text="${#strings.substring(#strings.toUpperCase(#authentication.name), 0, 1)}">A</span>
+                        <span class="ep-user-menu-label" sec:authentication="name">user</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end ep-user-dropdown" aria-labelledby="epUserMenuForm">
+                        <li class="px-3 py-2">
+                            <div class="ep-user-dropdown-name" sec:authentication="name">user</div>
+                            <div class="ep-user-dropdown-role" sec:authorize="hasRole('ADMIN')">Administrator</div>
+                            <div class="ep-user-dropdown-role" sec:authorize="hasRole('VIEWER')">Viewer</div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post" class="px-3 pb-2 mb-0">
+                                <button type="submit" class="btn btn-sm ep-btn-ghost w-100 text-start">
+                                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                                    Sign out
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -124,7 +152,7 @@
 </main>
 
 <footer class="ep-footer text-center">
-    <small>Built with Spring Boot · PostgreSQL · Flyway · Thymeleaf</small>
+    <small>Built with Spring Boot · Spring Security · PostgreSQL · Flyway · Thymeleaf</small>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
