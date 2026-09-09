@@ -92,33 +92,90 @@
             <div class="ep-stat-icon" aria-hidden="true"><i class="bi bi-calendar3"></i></div>
             <div class="ep-stat-body">
                 <span class="ep-stat-label">Total Events</span>
-                <strong class="ep-stat-value" th:text="${#lists.size(events)}">0</strong>
+                <strong class="ep-stat-value" th:text="${analytics.totalEvents}">0</strong>
             </div>
         </article>
-        <article class="ep-stat-card ep-stat-card--muted">
+        <article class="ep-stat-card">
             <div class="ep-stat-icon" aria-hidden="true"><i class="bi bi-calendar-event"></i></div>
             <div class="ep-stat-body">
-                <span class="ep-stat-label">Upcoming Events</span>
-                <!-- TODO: upcoming count requires backend metric -->
-                <strong class="ep-stat-value ep-stat-value--soon">Coming Soon</strong>
+                <span class="ep-stat-label">Upcoming &amp; Active</span>
+                <strong class="ep-stat-value" th:text="${analytics.upcomingAndActive}">0</strong>
             </div>
         </article>
-        <article class="ep-stat-card ep-stat-card--muted">
+        <article class="ep-stat-card">
             <div class="ep-stat-icon" aria-hidden="true"><i class="bi bi-sun"></i></div>
             <div class="ep-stat-body">
                 <span class="ep-stat-label">Today’s Events</span>
-                <!-- TODO: today's count requires backend metric -->
-                <strong class="ep-stat-value ep-stat-value--soon">Coming Soon</strong>
+                <strong class="ep-stat-value" th:text="${analytics.todaysEvents}">0</strong>
             </div>
         </article>
-        <article class="ep-stat-card ep-stat-card--muted">
+        <article class="ep-stat-card">
             <div class="ep-stat-icon" aria-hidden="true"><i class="bi bi-people"></i></div>
             <div class="ep-stat-body">
                 <span class="ep-stat-label">Average Attendance</span>
-                <!-- TODO: average attendance requires backend metric -->
-                <strong class="ep-stat-value ep-stat-value--soon">Coming Soon</strong>
+                <strong class="ep-stat-value"
+                       th:text="${analytics.averageAttendancePresent ? analytics.averageAttendance : '—'}">—</strong>
             </div>
         </article>
+    </section>
+
+    <section class="ep-insights" aria-label="Operational insights">
+        <header class="ep-insights-header">
+            <div>
+                <h2 class="ep-section-label">Operational Insights</h2>
+                <p class="ep-insights-lead">
+                    Portfolio metrics derived from your recorded events—attendance, schedule load, and network capacity.
+                </p>
+            </div>
+            <div class="ep-network-callout" th:if="${analytics.totalNetworkUsagePresent}">
+                <span class="ep-network-callout-label">Total Network Usage</span>
+                <strong class="ep-network-callout-value">
+                    <span th:text="${analytics.totalNetworkUsage}">0</span> GB
+                </strong>
+            </div>
+            <div class="ep-network-callout ep-network-callout--empty" th:unless="${analytics.totalNetworkUsagePresent}">
+                <span class="ep-network-callout-label">Total Network Usage</span>
+                <strong class="ep-network-callout-value">—</strong>
+            </div>
+        </header>
+
+        <div class="ep-insights-grid">
+            <article class="ep-chart-card">
+                <h3 class="ep-chart-title">Attendance by Event</h3>
+                <p class="ep-chart-desc">Ranks your largest recorded audiences so you can plan staffing and support.</p>
+                <div th:if="${analytics.hasAttendanceByEvent()}" class="ep-chart-canvas-wrap">
+                    <canvas id="epChartAttendance" aria-label="Attendance by event chart"></canvas>
+                </div>
+                <div th:unless="${analytics.hasAttendanceByEvent()}" class="ep-chart-empty">
+                    <div class="ep-chart-empty-icon" aria-hidden="true"><i class="bi bi-bar-chart"></i></div>
+                    <p>No attendance figures yet. Add attendance to events to see rankings.</p>
+                </div>
+            </article>
+
+            <article class="ep-chart-card">
+                <h3 class="ep-chart-title">Events per Month</h3>
+                <p class="ep-chart-desc">Shows how event volume has trended over the last twelve months.</p>
+                <div th:if="${analytics.totalEvents > 0}" class="ep-chart-canvas-wrap">
+                    <canvas id="epChartMonthly" aria-label="Events per month chart"></canvas>
+                </div>
+                <div th:unless="${analytics.totalEvents > 0}" class="ep-chart-empty">
+                    <div class="ep-chart-empty-icon" aria-hidden="true"><i class="bi bi-graph-up"></i></div>
+                    <p>No events recorded yet. Monthly volume will appear once events are added.</p>
+                </div>
+            </article>
+
+            <article class="ep-chart-card ep-chart-card--wide">
+                <h3 class="ep-chart-title">Attendance vs Wi‑Fi Estimate</h3>
+                <p class="ep-chart-desc">Compares actual headcount to planned Wi‑Fi capacity for events with both values.</p>
+                <div th:if="${analytics.hasAttendanceVsWifi()}" class="ep-chart-canvas-wrap ep-chart-canvas-wrap--tall">
+                    <canvas id="epChartCapacity" aria-label="Attendance versus Wi-Fi estimate chart"></canvas>
+                </div>
+                <div th:unless="${analytics.hasAttendanceVsWifi()}" class="ep-chart-empty">
+                    <div class="ep-chart-empty-icon" aria-hidden="true"><i class="bi bi-broadcast-pin"></i></div>
+                    <p>Need events with both attendance and Wi‑Fi estimate to compare capacity.</p>
+                </div>
+            </article>
+        </div>
     </section>
 
     <section class="ep-quick-actions" aria-label="Quick actions">
@@ -252,6 +309,12 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    window.epAnalytics = /*[[${analytics}]]*/ {};
+    /*]]>*/
+</script>
 <script>
     (function () {
         var dateEl = document.getElementById('epCurrentDate');
@@ -266,6 +329,171 @@
             searchBtn.addEventListener('click', function () {
                 document.getElementById('search').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 keyword.focus();
+            });
+        }
+
+        var data = window.epAnalytics || {};
+        if (typeof Chart === 'undefined') {
+            return;
+        }
+
+        var teal = '#0f766e';
+        var tealSoft = 'rgba(15, 118, 110, 0.72)';
+        var slate = '#64748b';
+        var navy = '#1e293b';
+        var grid = 'rgba(148, 163, 184, 0.25)';
+
+        Chart.defaults.font.family = '"IBM Plex Sans", "Segoe UI", sans-serif';
+        Chart.defaults.color = slate;
+        Chart.defaults.plugins.legend.labels.boxWidth = 12;
+        Chart.defaults.plugins.legend.labels.boxHeight = 12;
+
+        function truncate(label, max) {
+            if (!label) return '';
+            return label.length > max ? label.slice(0, max - 1) + '…' : label;
+        }
+
+        var attendanceCanvas = document.getElementById('epChartAttendance');
+        if (attendanceCanvas && data.attendanceByEvent && data.attendanceByEvent.length) {
+            var attLabels = data.attendanceByEvent.map(function (p) { return truncate(p.label, 28); });
+            var attValues = data.attendanceByEvent.map(function (p) { return p.value; });
+            new Chart(attendanceCanvas, {
+                type: 'bar',
+                data: {
+                    labels: attLabels,
+                    datasets: [{
+                        label: 'Attendance',
+                        data: attValues,
+                        backgroundColor: tealSoft,
+                        borderColor: teal,
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        maxBarThickness: 28
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function (items) {
+                                    var i = items[0].dataIndex;
+                                    return data.attendanceByEvent[i].label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: grid },
+                            ticks: { precision: 0 }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: navy }
+                        }
+                    }
+                }
+            });
+        }
+
+        var monthlyCanvas = document.getElementById('epChartMonthly');
+        if (monthlyCanvas && data.eventsPerMonth && data.eventsPerMonth.length) {
+            new Chart(monthlyCanvas, {
+                type: 'line',
+                data: {
+                    labels: data.eventsPerMonth.map(function (p) { return p.label; }),
+                    datasets: [{
+                        label: 'Events',
+                        data: data.eventsPerMonth.map(function (p) { return p.value; }),
+                        borderColor: teal,
+                        backgroundColor: 'rgba(15, 118, 110, 0.12)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: teal
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { maxRotation: 45, minRotation: 0, color: navy }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 },
+                            grid: { color: grid }
+                        }
+                    }
+                }
+            });
+        }
+
+        var capacityCanvas = document.getElementById('epChartCapacity');
+        if (capacityCanvas && data.attendanceVsWifi && data.attendanceVsWifi.length) {
+            var capLabels = data.attendanceVsWifi.map(function (p) { return truncate(p.label, 22); });
+            new Chart(capacityCanvas, {
+                type: 'bar',
+                data: {
+                    labels: capLabels,
+                    datasets: [
+                        {
+                            label: 'Attendance',
+                            data: data.attendanceVsWifi.map(function (p) { return p.attendance; }),
+                            backgroundColor: tealSoft,
+                            borderColor: teal,
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            maxBarThickness: 36
+                        },
+                        {
+                            label: 'Wi‑Fi Estimate',
+                            data: data.attendanceVsWifi.map(function (p) { return p.wifiEstimate; }),
+                            backgroundColor: 'rgba(30, 41, 59, 0.55)',
+                            borderColor: navy,
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            maxBarThickness: 36
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', align: 'end' },
+                        tooltip: {
+                            callbacks: {
+                                title: function (items) {
+                                    var i = items[0].dataIndex;
+                                    return data.attendanceVsWifi[i].label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: navy }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 },
+                            grid: { color: grid }
+                        }
+                    }
+                }
             });
         }
     })();

@@ -9,6 +9,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Controller
 public class EventController {
@@ -21,14 +22,19 @@ public class EventController {
 
     @GetMapping("/")
     public String viewHomePage(Model model) {
-        model.addAttribute("events", eventService.getAllEvents());
+        List<Event> events = eventService.getAllEvents();
+        model.addAttribute("events", events);
+        model.addAttribute("analytics", eventService.buildDashboardAnalytics(events));
         return "index";
     }
 
     @GetMapping("/searchEvents")
     public String searchEvents(@RequestParam("keyword") String keyword, Model model) {
+        List<Event> allEvents = eventService.getAllEvents();
         model.addAttribute("events", eventService.searchEvents(keyword));
         model.addAttribute("keyword", keyword);
+        // Portfolio analytics stay portfolio-wide while the table shows search hits.
+        model.addAttribute("analytics", eventService.buildDashboardAnalytics(allEvents));
         return "index";
     }
 
@@ -60,6 +66,7 @@ public class EventController {
         eventService.deleteEvent(id);
         return "redirect:/";
     }
+
     @GetMapping("/showFormForUpdate/{id}")
     public String showFormForUpdate(@PathVariable Long id, Model model) {
         Event event = eventService.getEventById(id);
